@@ -4,9 +4,11 @@ const SPEED = 200.0  # 이동 속도
 const GRAVITY = 980.0  # 중력 값
 const JUMP_VELOCITY = -400.0  # 점프 속도
 
+
 @onready var anim_sprite = $AnimatedSprite2D  # 애니메이션 노드 가져오기
 @onready var projectile_scene = preload("res://scenes/Projectile.tscn")
 @onready var attack_point = $Attackpoint # 공격 위치 지정
+
 
 func _physics_process(delta: float) -> void:
 	# 중력 적용
@@ -56,4 +58,26 @@ func attack():
 	projectile.direction = attack_direction  # 투사체 방향 지정
 
 
+@onready var hp_bar = $CanvasLayer/HPBar
+
+func _ready() -> void:
+	update_hp_ui()
 	
+func take_damage(amount: int):
+	Global.player_hp -= amount
+	Global.player_hp = max(Global.player_hp, 0)
+	update_hp_ui()
+	
+	if Global.player_hp <= 0:
+		die()
+		
+func die():
+	queue_free()
+	
+func update_hp_ui():
+	hp_bar.value = float(Global.player_hp) / Global.max_player_hp * 100
+	
+func _process(_delta):
+	if Input.is_action_just_pressed("ui_down"):  # 체력 감소 테스트 키 (↓키)
+		take_damage(10)
+		print("현재 체력:", Global.player_hp)  # 디버깅 출력
